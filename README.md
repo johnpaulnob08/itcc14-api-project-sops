@@ -1,9 +1,9 @@
 ## Project Milestones (Student Organization Profiling System - SOPS)
 
 ## Members
-1. [Karla Mae Alo-ot](https://github.com/historia2005)
-2. [Christine Marie Amarille](https://github.com/tine-art16)
-3. [Nadjah Dimaporo](https://github.com/nadjahdimaporo)
+1.
+2.
+3.
 4. [John Paul Nob](https://github.com/johnpaulnob08)
 
 
