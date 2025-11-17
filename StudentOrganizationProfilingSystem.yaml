@@ -1,0 +1,195 @@
+# Student Organization Profiling System (SOPS) - OpenAPI Specification
+# Alo-ot, Amarille, Dimaporo, & Nob
+# Milestone 1: API Design
+# ITCC 14 A - INTEGRATIVE PROGRAMING AND TECHNOLOGIES
+
+openapi: 3.0.3
+
+info:
+  title: Student Organization Profiling System API
+  version: "1.0.0"
+  description: >
+    The Student Organization Profiling System (SOPS) API enables authorized users
+    to manage and monitor organization member information. It supports basic
+    CRUD operations such as adding, viewing, editing, and deleting member profiles.
+
+externalDocs:
+  description: Learn more about the SOPS project
+  url: https://sopsapi.local/docs
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local Development Server
+  - url: https://sopsapi.edu/api
+    description: Production Server
+
+tags:
+  - name: member
+    description: Operations related to organization member management
+
+paths:
+  /members:
+    get:
+      tags:
+        - member
+      summary: Retrieve all organization members
+      description: Fetch a list of all registered members with optional filters.
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [Active, Inactive]
+          description: Filter members based on activity status
+        - in: query
+          name: yearLevel
+          schema:
+            type: string
+          description: Filter members based on year level
+      responses:
+        200:
+          description: Successfully retrieved all members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Members'
+        500:
+          description: Internal server error
+
+    post:
+      tags:
+        - member
+      summary: Add a new member profile
+      description: Create a new member record with name, year level, position, and activity status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Member'
+            example:
+              name: "John Paul Nob"
+              yearLevel: "3rd Year"
+              position: "President"
+              status: "Active"
+      responses:
+        201:
+          description: Member successfully added
+        400:
+          description: Invalid input data
+        500:
+          description: Internal server error
+
+  /members/{id}:
+    get:
+      tags:
+        - member
+      summary: Retrieve specific member information
+      description: Get details of a specific member by their unique ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The unique ID of the member
+      responses:
+        200:
+          description: Member information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+        404:
+          description: Member not found
+        500:
+          description: Internal server error
+
+    patch:
+      tags:
+        - member
+      summary: Update an existing member's information
+      description: Edit existing member details such as position or activity status.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the member to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberUpdate'
+            example:
+              position: "Vice President"
+              status: "Active"
+      responses:
+        200:
+          description: Member information successfully updated
+        400:
+          description: Invalid input data
+        404:
+          description: Member not found
+        500:
+          description: Internal server error
+
+    delete:
+      tags:
+        - member
+      summary: Delete a member record
+      description: Remove an inactive or graduated member from the organization database.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the member to delete
+      responses:
+        200:
+          description: Member successfully deleted
+        404:
+          description: Member not found
+        500:
+          description: Internal server error
+
+components:
+  schemas:
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "6752fc22a9b8c1a002eaf9a3"
+        name:
+          type: string
+          example: "John Paul Nob"
+        yearLevel:
+          type: string
+          example: "3rd Year"
+        position:
+          type: string
+          example: "President"
+        status:
+          type: string
+          enum: [Active, Inactive]
+          example: "Active"
+
+    Members:
+      type: array
+      items:
+        $ref: '#/components/schemas/Member'
+
+    MemberUpdate:
+      type: object
+      properties:
+        position:
+          type: string
+          example: "Secretary"
+        status:
+          type: string
+          enum: [Active, Inactive]
+          example: "Inactive"
