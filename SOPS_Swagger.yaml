@@ -1,0 +1,408 @@
+openapi: 3.0.3
+
+info:
+  title: Student Organization Profiling System API
+  version: 1.1.0
+  description: >
+    The Student Organization Profiling System (SOPS) API provides authentication,
+    user management, and member profiling services for a university-based organization.
+    It supports role-based access control for Members, Executives, and Admins.
+
+servers:
+  - url: http://localhost:3000/api
+
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Members
+    description: Member profile operations
+  - name: Users
+    description: User account management
+  - name: Summary
+    description: Organization and system summaries
+
+paths:
+
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Missing fields or email already registered
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user and return JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+        "400":
+          description: Invalid credentials
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get logged-in user account and member profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Account and profile returned
+        "401":
+          description: Unauthorized
+
+  /auth/user/{id}:
+    delete:
+      tags: [Users]
+      summary: Delete a user account and linked member profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User and profile deleted
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+
+  /members/me:
+    get:
+      tags: [Members]
+      summary: Get own merged user and member profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profile returned
+        "404":
+          description: Profile not found
+
+  /members:
+    post:
+      tags: [Members]
+      summary: Create a member profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberCreate"
+      responses:
+        "201":
+          description: Member profile created
+        "400":
+          description: Profile already exists
+
+    get:
+      tags: [Members]
+      summary: Get all members
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Members list returned
+        "403":
+          description: Forbidden
+
+  /members/{id}:
+    get:
+      tags: [Members]
+      summary: Get member by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Member found
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+    put:
+      tags: [Members]
+      summary: Update member profile by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberUpdate"
+      responses:
+        "200":
+          description: Member updated
+
+    patch:
+      tags: [Members]
+      summary: Partially update member profile by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberUpdate"
+      responses:
+        "200":
+          description: Member updated
+
+    delete:
+      tags: [Members]
+      summary: Delete member profile by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Member deleted
+        "403":
+          description: Forbidden
+
+  /members/summary:
+    get:
+      tags: [Summary]
+      summary: Organization summary
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Summary returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberSummary"
+        "403":
+          description: Forbidden
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Get all users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Users list returned
+        "403":
+          description: Forbidden
+
+  /users/summary:
+    get:
+      tags: [Summary]
+      summary: System-wide user summary
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: System summary returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSummary"
+        "403":
+          description: Forbidden
+
+  /users/{id}/role:
+    patch:
+      tags: [Users]
+      summary: Update a user's role
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRole"
+      responses:
+        "200":
+          description: Role updated
+        "400":
+          description: Invalid role
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+
+  /users/{id}:
+    delete:
+      tags: [Users]
+      summary: Delete user account
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User deleted
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    SignupRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    UpdateUserRole:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [Member, Executive, Admin]
+
+    MemberCreate:
+      type: object
+      required: [firstname, lastname, email]
+      properties:
+        userId:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        department:
+          type: string
+        year_level:
+          type: string
+        position:
+          type: string
+        status:
+          type: string
+          default: Active
+
+    MemberUpdate:
+      type: object
+      properties:
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+        department:
+          type: string
+        year_level:
+          type: string
+        position:
+          type: string
+        status:
+          type: string
+
+    MemberSummary:
+      type: object
+      properties:
+        members:
+          type: integer
+        active_members:
+          type: integer
+        accounts:
+          type: object
+          properties:
+            members:
+              type: integer
+            executives:
+              type: integer
+            admins:
+              type: integer
+
+    UserSummary:
+      type: object
+      properties:
+        accounts:
+          type: object
+          properties:
+            admins:
+              type: integer
+            executives:
+              type: integer
+            members:
+              type: integer
+        total_member_profiles:
+          type: integer
