@@ -1,28 +1,19 @@
-// routes/memberRoutes.js
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const memberCtrl = require("../controllers/memberController");
 
-// ===============================
-// ⭐ MUST BE ABOVE ANY /:id ROUTES
-// ===============================
+// SELF
 
-// Get logged-in user's merged profile
+// Get logged-in user's merged profile (user ug member nila)
 router.get("/me", auth, memberCtrl.getMyProfile);
 
-// Update own member profile
-router.patch("/me/update-profile", auth, memberCtrl.updateMyProfile);
+// SUMMARY
 
-// Delete own account + member profile
-router.delete("/me/delete", auth, memberCtrl.deleteMyAccount);
+// Org summary (Executive/Admin) basta mao ning /api/members/summary
+router.get("/summary", auth, memberCtrl.getMemberSummary);
 
-// Get organization summary (Exec/Admin only)
-router.get("/me/summary", auth, memberCtrl.getSummary);
-
-// ===============================
-// EXISTING ROUTES (no changes)
-// ===============================
+// MEMBERS
 
 // Create a new member profile
 router.post("/", auth, memberCtrl.createMember);
@@ -33,11 +24,11 @@ router.get("/", auth, memberCtrl.getAllMembers);
 // Get member by ID
 router.get("/:id", auth, memberCtrl.getMemberById);
 
-// Update member by ID (PUT or PATCH)
+// Update member by ID (owner or Exec/Admin)
 router.put("/:id", auth, memberCtrl.updateMember);
 router.patch("/:id", auth, memberCtrl.updateMember);
 
-// Delete member by ID
+// Delete member by ID (owner or Exec/Admin)
 router.delete("/:id", auth, memberCtrl.deleteMember);
 
 module.exports = router;

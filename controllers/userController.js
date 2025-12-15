@@ -1,23 +1,75 @@
 const User = require("../models/User");
+const Member = require("../models/Member");
 
-// Admin only: change a user's role
-const changeUserRole = async (req, res) => {
-  try {
-    // Only Admin allowed (middleware should check, but double-check here)
-    if (req.user.role !== "Admin") return res.status(403).json({ message: "Forbidden" });
+// GET ALL USERS (Admin)
 
-    const userId = req.params.id;
-    const { role } = req.body;
-    if (!["Member", "Executive", "Admin"].includes(role)) return res.status(400).json({ message: "Invalid role" });
+const getAllUsers = async (req, res) => {
+  if (req.user.role !== "Admin")
+    return res.status(403).json({ message: "Forbidden" });
 
-    const user = await User.findByIdAndUpdate(userId, { role }, { new: true });
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    return res.json({ message: "Role updated", user: { id: user._id, email: user.email, role: user.role } });
-  } catch (err) {
-    console.error(err);
-    return res.status(400).json({ message: err.message });
-  }
+  const users = await User.find().select("-passwordHash");
+  res.json(users);
 };
 
-module.exports = { changeUserRole };
+// ADMIN SYSTEM SUMMARY (mao ni ang GET /api/users/summary)
+
+const getUserSummary = async (req, res) => {
+  if (req.user.role !== "Admin")
+    return res.status(403).json({ message: "Forbidden" });
+
+  const admins = await User.countDocuments({ role: "Admin" });
+  const executives = await User.countDocuments({ role: "Executive" });
+  const members = await User.countDocuments({ role: "Member" });
+
+  const totalProfiles = await Member.countDocuments();
+
+  res.json({
+    accounts: {
+      admins,
+      executives,
+      members
+    },
+    total_member_profiles: totalProfiles
+  });
+};
+
+// CHANGE ROLE (admin will do this and applicable sa tanang users guys ha)
+
+const changeUserRole = async (req, res) => {
+  if (req.user.role !== "Admin")
+    return res.status(403).json({ message: "Forbidden" });
+
+  const { role } = req.body;
+  if (!["Member", "Executive", "Admin"].includes(role))
+    return res.status(400).json({ message: "Invalid role" });
+
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { role },
+    { new: true }
+  ).select("-passwordHash");
+
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  res.json({ message: "Role updated", user });
+};
+
+// DELETE USER
+
+const deleteUser = async (req, res) => {
+  if (req.user.role !== "Admin")
+    return res.status(403).json({ message: "Forbidden" });
+
+  const userId = req.params.id;
+  await Member.findOneAndDelete({ userId });
+  await User.findByIdAndDelete(userId);
+
+  res.json({ message: "User and profile deleted" });
+};
+
+module.exports = {
+  getAllUsers,
+  getUserSummary,
+  changeUserRole,
+  deleteUser
+};

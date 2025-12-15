@@ -1,4 +1,3 @@
-// routes/authRoutes.js
 const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/auth");
@@ -10,7 +9,7 @@ router.post("/signup", signup);
 // User login
 router.post("/login", login);
 
-// ⭐ NEW: Get logged-in user's account + profile
+// Get logged-in user's account + profile
 router.get("/me", auth, getMe);
 
 // Admin: Delete user + profile
